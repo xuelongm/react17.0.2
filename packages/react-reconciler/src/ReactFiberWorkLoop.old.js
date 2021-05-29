@@ -522,6 +522,7 @@ export function scheduleUpdateOnFiber(
   checkForNestedUpdates();
   warnAboutRenderPhaseUpdatesInDEV(fiber);
 
+  // 获取到fiberroot,react中，所有的更新都是从root开始的
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
   if (root === null) {
     warnAboutUpdateOnUnmountedFiberInDEV(fiber);
@@ -530,7 +531,7 @@ export function scheduleUpdateOnFiber(
 
   // Mark that the root has a pending update.
   markRootUpdated(root, lane, eventTime);
-
+  // 一般的情况下workInProgressRoot === null
   if (root === workInProgressRoot) {
     // Received an update to a tree that's in the middle of rendering. Mark
     // that there was an interleaved update work on this root. Unless the
@@ -566,6 +567,7 @@ export function scheduleUpdateOnFiber(
       // Check if we're inside unbatchedUpdates
       (executionContext & LegacyUnbatchedContext) !== NoContext &&
       // Check if we're not already rendering
+      // 表示尚未渲染
       (executionContext & (RenderContext | CommitContext)) === NoContext
     ) {
       // Register pending interactions on the root to avoid losing traced interaction data.
@@ -574,6 +576,7 @@ export function scheduleUpdateOnFiber(
       // This is a legacy edge case. The initial mount of a ReactDOM.render-ed
       // root inside of batchedUpdates should be synchronous, but layout updates
       // should be deferred until the end of the batch.
+      // 同步更新
       performSyncWorkOnRoot(root);
     } else {
       ensureRootIsScheduled(root, eventTime);
@@ -659,6 +662,7 @@ function markUpdateLaneFromFiberToRoot(
     parent = parent.return;
   }
   if (node.tag === HostRoot) {
+    // root fiber stateNode -> fiber root
     const root: FiberRoot = node.stateNode;
     return root;
   } else {
@@ -697,6 +701,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   }
 
   // Check if there's an existing task. We may be able to reuse it.
+  // 检查是否有现有任务，可能会重用
   if (existingCallbackNode !== null) {
     const existingCallbackPriority = root.callbackPriority;
     if (existingCallbackPriority === newCallbackPriority) {
@@ -776,7 +781,7 @@ function performConcurrentWorkOnRoot(root) {
     // Defensive coding. This is never expected to happen.
     return null;
   }
-
+  // 开始渲染
   let exitStatus = renderRootConcurrent(root, lanes);
 
   if (
@@ -826,6 +831,8 @@ function performConcurrentWorkOnRoot(root) {
     const finishedWork: Fiber = (root.current.alternate: any);
     root.finishedWork = finishedWork;
     root.finishedLanes = lanes;
+    // commitRoot
+    // 表示workInprogress已构建好，effectList已完成，开始同步渲染
     finishConcurrentRender(root, exitStatus, lanes);
   }
 
@@ -1571,6 +1578,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
   // and prepare a fresh one. Otherwise we'll continue where we left off.
   if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
     resetRenderTimer();
+    // 初始化workInProgress
     prepareFreshStack(root, lanes);
     startWorkOnPendingInteractions(root, lanes);
   }
@@ -1623,6 +1631,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
     }
 
     // Set this to null to indicate there's no in-progress render.
+    // 将 workInProgressRoot 设置为null
     workInProgressRoot = null;
     workInProgressRootRenderLanes = NoLanes;
 
@@ -1649,6 +1658,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   let next;
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
     startProfilerTimer(unitOfWork);
+    // 构建workInProgress
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
@@ -1659,6 +1669,8 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
+    // 表示如果当前节点没有子节点，直接将当前节点complate
+    // 完成effectList 链表的创建
     completeUnitOfWork(unitOfWork);
   } else {
     workInProgress = next;
@@ -1686,6 +1698,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
         !enableProfilerTimer ||
         (completedWork.mode & ProfileMode) === NoMode
       ) {
+        // 创建出更新
         next = completeWork(current, completedWork, subtreeRenderLanes);
       } else {
         startProfilerTimer(completedWork);
@@ -1702,7 +1715,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
       }
 
       resetChildLanes(completedWork);
-
+      
       if (
         returnFiber !== null &&
         // Do not append effects to parents if a sibling failed to complete

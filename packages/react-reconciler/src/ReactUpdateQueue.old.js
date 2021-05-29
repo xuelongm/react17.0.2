@@ -206,8 +206,12 @@ export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   const pending = sharedQueue.pending;
   if (pending === null) {
     // This is the first update. Create a circular list.
+    // 形成环状， A.next -> A, P = A
     update.next = update;
   } else {
+    // 如果sate产生多个
+    // B: B.next -> A, A.next -> B, P = B;
+    // C: C.next -> A, B.next -> C, P = C
     update.next = pending.next;
     pending.next = update;
   }
@@ -381,6 +385,7 @@ function getStateFromUpdate<State>(
         return prevState;
       }
       // Merge the partial state and the previous state.
+      // 将属性合并
       return Object.assign({}, prevState, partialState);
     }
     case ForceUpdate: {
@@ -410,6 +415,8 @@ export function processUpdateQueue<State>(
   let lastBaseUpdate = queue.lastBaseUpdate;
 
   // Check if there are pending updates. If so, transfer them to the base queue.
+  // pending 是最后一个
+  // pending.next 是第一个
   let pendingQueue = queue.shared.pending;
   if (pendingQueue !== null) {
     queue.shared.pending = null;
@@ -418,6 +425,7 @@ export function processUpdateQueue<State>(
     // and last so that it's non-circular.
     const lastPendingUpdate = pendingQueue;
     const firstPendingUpdate = lastPendingUpdate.next;
+    // 剪断环状链表
     lastPendingUpdate.next = null;
     // Append pending updates to base queue
     if (lastBaseUpdate === null) {

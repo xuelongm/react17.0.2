@@ -246,7 +246,7 @@ export function createContainer(
 ): OpaqueRoot {
   return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks);
 }
-
+// 开始更新
 export function updateContainer(
   element: ReactNodeList,
   container: OpaqueRoot,
@@ -256,6 +256,7 @@ export function updateContainer(
   if (__DEV__) {
     onScheduleRoot(container, element);
   }
+  // root Fiber
   const current = container.current;
   const eventTime = requestEventTime();
   if (__DEV__) {
@@ -265,6 +266,7 @@ export function updateContainer(
       warnIfNotScopedWithMatchingAct(current);
     }
   }
+  // 获取更新优先级
   const lane = requestUpdateLane(current);
 
   if (enableSchedulingProfiler) {
@@ -295,6 +297,7 @@ export function updateContainer(
     }
   }
 
+  // 创建更新队列
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
   // being called "element".

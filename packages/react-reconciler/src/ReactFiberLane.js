@@ -642,6 +642,7 @@ export function higherLanePriority(
 export function createLaneMap<T>(initial: T): LaneMap<T> {
   // Intentionally pushing one by one.
   // https://v8.dev/blog/elements-kinds#avoid-creating-holes
+  // 做性能优化，这样的数组类型为PACKED_SMI_ELEMENTS
   const laneMap = [];
   for (let i = 0; i < TotalLanes; i++) {
     laneMap.push(initial);
