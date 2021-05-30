@@ -195,6 +195,12 @@ export function createUpdate(eventTime: number, lane: Lane): Update<*> {
   return update;
 }
 
+/**
+ * 更新当前fiber上的updata，让当前的fiber.shared.pending 形成环状链表
+ * @param {FiberNode} fiber 
+ * @param update 
+ * @returns null
+ */
 export function enqueueUpdate<State>(fiber: Fiber, update: Update<State>) {
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {

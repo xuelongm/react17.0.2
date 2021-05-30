@@ -524,12 +524,14 @@ export function scheduleUpdateOnFiber(
 
   // 获取到fiberroot,react中，所有的更新都是从root开始的
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
+  // 如果fiberroot为null，直接跳出当前更新
   if (root === null) {
     warnAboutUpdateOnUnmountedFiberInDEV(fiber);
     return null;
   }
 
   // Mark that the root has a pending update.
+  // 讲root设置为待更新的状态
   markRootUpdated(root, lane, eventTime);
   // 一般的情况下workInProgressRoot === null
   if (root === workInProgressRoot) {
@@ -1892,7 +1894,7 @@ function resetChildLanes(completedWork: Fiber) {
 function commitRoot(root) {
   const renderPriorityLevel = getCurrentPriorityLevel();
   runWithPriority(
-    ImmediateSchedulerPriority,
+    ImmediateSchedulerPriority, // 表示以同步的来调用的commitRootImpl
     commitRootImpl.bind(null, root, renderPriorityLevel),
   );
   return null;
@@ -2026,6 +2028,7 @@ function commitRootImpl(root, renderPriorityLevel) {
 
     nextEffect = firstEffect;
     do {
+      
       if (__DEV__) {
         invokeGuardedCallback(null, commitBeforeMutationEffects, null);
         if (hasCaughtError()) {
@@ -2036,6 +2039,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // 会调用getSnapshotBeforeUpdate函数
           commitBeforeMutationEffects();
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
@@ -2073,6 +2077,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // 解绑ref，调用useLayoutEffect销毁函数, 调用DOM操作
           commitMutationEffects(root, renderPriorityLevel);
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
@@ -2091,6 +2096,7 @@ function commitRootImpl(root, renderPriorityLevel) {
     // the mutation phase, so that the previous tree is still current during
     // componentWillUnmount, but before the layout phase, so that the finished
     // work is current during componentDidMount/Update.
+    // 将workProgress 赋值到当前的current
     root.current = finishedWork;
 
     // The next phase is the layout phase, where we call effects that read
@@ -2108,6 +2114,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
+          // 调用生命周期，调用useLayoutEffect，讲useEffect放入到数组中，绑定ref
           commitLayoutEffects(root, lanes);
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');
@@ -2292,7 +2299,7 @@ function commitBeforeMutationEffects() {
     const flags = nextEffect.flags;
     if ((flags & Snapshot) !== NoFlags) {
       setCurrentDebugFiberInDEV(nextEffect);
-
+      // 如果current 为ClassComponent 则会调用getSnapshotBeforeUpdate
       commitBeforeMutationEffectOnFiber(current, nextEffect);
 
       resetCurrentDebugFiberInDEV();
@@ -2329,6 +2336,7 @@ function commitMutationEffects(
     if (flags & Ref) {
       const current = nextEffect.alternate;
       if (current !== null) {
+        // 解绑ref
         commitDetachRef(current);
       }
       if (enableScopeAPI) {
@@ -2563,6 +2571,7 @@ function flushPassiveEffectsImpl() {
   // Layout effects have the same constraint.
 
   // First pass: Destroy stale passive effects.
+  // 上次执行的useEffect的销毁函数
   const unmountEffects = pendingPassiveHookEffectsUnmount;
   pendingPassiveHookEffectsUnmount = [];
   for (let i = 0; i < unmountEffects.length; i += 2) {
@@ -2578,7 +2587,7 @@ function flushPassiveEffectsImpl() {
         alternate.flags &= ~PassiveUnmountPendingDev;
       }
     }
-
+    // 如果destroy不为undefined，执行销毁函数
     if (typeof destroy === 'function') {
       if (__DEV__) {
         setCurrentDebugFiberInDEV(fiber);
@@ -2623,6 +2632,7 @@ function flushPassiveEffectsImpl() {
     }
   }
   // Second pass: Create new passive effects.
+  // 执行本次的useEffect
   const mountEffects = pendingPassiveHookEffectsMount;
   pendingPassiveHookEffectsMount = [];
   for (let i = 0; i < mountEffects.length; i += 2) {

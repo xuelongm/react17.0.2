@@ -60,6 +60,7 @@ import {
 } from 'react-reconciler/src/ReactRootTags';
 
 function ReactDOMRoot(container: Container, options: void | RootOptions) {
+  // 使用Concurrent 模式，试验阶段
   this._internalRoot = createRootImpl(container, ConcurrentRoot, options);
 }
 
@@ -132,6 +133,7 @@ function createRootImpl(
       options.hydrationOptions != null &&
       options.hydrationOptions.mutableSources) ||
     null;
+  // FiberRoot
   const root = createContainer(container, tag, hydrate, hydrationCallbacks);
   markContainerAsRoot(root.current, container);
   const containerNodeType = container.nodeType;

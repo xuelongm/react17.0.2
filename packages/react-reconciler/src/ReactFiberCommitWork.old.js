@@ -480,10 +480,11 @@ function commitLifeCycles(
       } else {
         commitHookEffectListMount(HookLayout | HookHasEffect, finishedWork);
       }
-
+      // 讲useEffect 加入到数组中
       schedulePassiveEffects(finishedWork);
       return;
     }
+    // 调用生命周期
     case ClassComponent: {
       const instance = finishedWork.stateNode;
       if (finishedWork.flags & Update) {
@@ -1450,6 +1451,7 @@ function commitWork(current: Fiber | null, finishedWork: Fiber): void {
         ) {
           try {
             startLayoutEffectTimer();
+            // 调用uselayoutEffect销毁函数
             commitHookEffectListUnmount(
               HookLayout | HookHasEffect,
               finishedWork,
