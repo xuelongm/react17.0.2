@@ -191,11 +191,12 @@ function legacyRenderSubtreeIntoContainer(
   // 根据root是否存在，判断是否更新或mount
   if (!root) {
     // Initial mount
-    // Fiber Root
+    // container 保函默认的 render 和 unmount
     root = container._reactRootContainer = legacyCreateRootFromDOMContainer(
       container,
       forceHydrate,
     );
+    // fiberRoot
     fiberRoot = root._internalRoot;
     if (typeof callback === 'function') {
       const originalCallback = callback;
@@ -209,6 +210,7 @@ function legacyRenderSubtreeIntoContainer(
       updateContainer(children, fiberRoot, parentComponent, callback);
     });
   } else {
+    // 当前fiberRoot
     fiberRoot = root._internalRoot;
     if (typeof callback === 'function') {
       const originalCallback = callback;

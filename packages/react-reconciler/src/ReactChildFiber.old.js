@@ -272,6 +272,7 @@ function resolveLazyType<T, P>(
 // a compiler or we can do it manually. Helpers that don't need this branching
 // live outside of this function.
 function ChildReconciler(shouldTrackSideEffects) {
+  // 删除节点
   function deleteChild(returnFiber: Fiber, childToDelete: Fiber): void {
     if (!shouldTrackSideEffects) {
       // Noop.
@@ -293,6 +294,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     childToDelete.flags = Deletion;
   }
 
+  // 删除当前节点及其兄弟节点
   function deleteRemainingChildren(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
@@ -312,6 +314,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     return null;
   }
 
+  // diff时将未比较完成的old节点，加入到map中，在O(1)时间可以找到
   function mapRemainingChildren(
     returnFiber: Fiber,
     currentFirstChild: Fiber,
@@ -333,6 +336,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     return existingChildren;
   }
 
+  // 复用fiber
   function useFiber(fiber: Fiber, pendingProps: mixed): Fiber {
     // We currently set sibling to null and index to 0 here because it is easy
     // to forget to do before returning it. E.g. for the single child case.
@@ -768,6 +772,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     return knownKeys;
   }
 
+  // diff array
   function reconcileChildrenArray(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
@@ -802,13 +807,22 @@ function ChildReconciler(shouldTrackSideEffects) {
       }
     }
 
+    // 第一个child fiber，最终返回
     let resultingFirstChild: Fiber | null = null;
+    // 中间状态
     let previousNewFiber: Fiber | null = null;
 
+    // 当前的old fiber
     let oldFiber = currentFirstChild;
     let lastPlacedIndex = 0;
+    // 当前dom的索引
     let newIdx = 0;
+    // 下一个old fiber
     let nextOldFiber = null;
+    // 比较更新的情况
+    // 在两种情况下会跳出此循环
+    // 1、oldFiber.key !== newFiber.key
+    // 2、old或者new循环完成
     for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
       if (oldFiber.index > newIdx) {
         nextOldFiber = oldFiber;
@@ -822,6 +836,7 @@ function ChildReconciler(shouldTrackSideEffects) {
         newChildren[newIdx],
         lanes,
       );
+      // 表示key不相等，直接跳出当前循环
       if (newFiber === null) {
         // TODO: This breaks on empty slots like null children. That's
         // unfortunate because it triggers the slow path all the time. We need
@@ -854,12 +869,14 @@ function ChildReconciler(shouldTrackSideEffects) {
       oldFiber = nextOldFiber;
     }
 
+    // new 循环完成，删除剩余old
     if (newIdx === newChildren.length) {
       // We've reached the end of the new children. We can delete the rest.
       deleteRemainingChildren(returnFiber, oldFiber);
       return resultingFirstChild;
     }
 
+    // old 循环完成，将new剩余节点插入
     if (oldFiber === null) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
@@ -880,7 +897,9 @@ function ChildReconciler(shouldTrackSideEffects) {
       return resultingFirstChild;
     }
 
+    // old 和 new 都未完成
     // Add all children to a key map for quick lookups.
+    // 将old 形成map
     const existingChildren = mapRemainingChildren(returnFiber, oldFiber);
 
     // Keep scanning and use the map to restore deleted items as moves.
@@ -913,7 +932,7 @@ function ChildReconciler(shouldTrackSideEffects) {
         previousNewFiber = newFiber;
       }
     }
-
+    // 将剩余情况删除
     if (shouldTrackSideEffects) {
       // Any existing children that weren't consumed above were deleted. We need
       // to add them to the deletion list.

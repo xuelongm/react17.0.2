@@ -170,6 +170,7 @@ export function setValueForProperty(
     } else {
       // Contrary to `setAttribute`, object properties are properly
       // `toString`ed by IE8/9.
+      // 对ie8或ie9做一些兼容
       (node: any)[propertyName] = value;
     }
     return;
@@ -200,6 +201,7 @@ export function setValueForProperty(
     if (attributeNamespace) {
       node.setAttributeNS(attributeNamespace, attributeName, attributeValue);
     } else {
+      // 为属性赋值
       node.setAttribute(attributeName, attributeValue);
     }
   }

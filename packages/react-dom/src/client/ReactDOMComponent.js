@@ -520,6 +520,7 @@ export function setInitialProperties(
   rawProps: Object,
   rootContainerElement: Element | Document,
 ): void {
+  // 判断是否为自定义标签
   const isCustomComponentTag = isCustomComponent(tag, rawProps);
   if (__DEV__) {
     validatePropertiesInDevelopment(tag, rawProps);
@@ -615,6 +616,7 @@ export function setInitialProperties(
       props = rawProps;
   }
 
+  // 判断props是否合法
   assertValidProps(tag, props);
 
   setInitialDOMProperties(

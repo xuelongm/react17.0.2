@@ -266,6 +266,7 @@ const RootCompleted = 5;
 // Describes where we are in the React execution stack
 let executionContext: ExecutionContext = NoContext;
 // The root we're working on
+// 只想当前的FiberRoot
 let workInProgressRoot: FiberRoot | null = null;
 // The fiber we're working on
 let workInProgress: Fiber | null = null;
@@ -579,6 +580,7 @@ export function scheduleUpdateOnFiber(
       // root inside of batchedUpdates should be synchronous, but layout updates
       // should be deferred until the end of the batch.
       // 同步更新
+      // root -> fiberRoot.current
       performSyncWorkOnRoot(root);
     } else {
       ensureRootIsScheduled(root, eventTime);
@@ -837,7 +839,7 @@ function performConcurrentWorkOnRoot(root) {
     // 表示workInprogress已构建好，effectList已完成，开始同步渲染
     finishConcurrentRender(root, exitStatus, lanes);
   }
-
+  //ensureRootIsScheduled
   ensureRootIsScheduled(root, now());
   if (root.callbackNode === originalCallbackNode) {
     // The task node scheduled for this root is the same one that's
@@ -976,7 +978,7 @@ function performSyncWorkOnRoot(root) {
     (executionContext & (RenderContext | CommitContext)) === NoContext,
     'Should not already be working.',
   );
-
+  // 清楚useEffect的销毁函数
   flushPassiveEffects();
 
   let lanes;
@@ -1327,7 +1329,9 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes) {
       interruptedWork = interruptedWork.return;
     }
   }
+  
   workInProgressRoot = root;
+  // 初始化workInprogress
   workInProgress = createWorkInProgress(root.current, null);
   workInProgressRootRenderLanes = subtreeRenderLanes = workInProgressRootIncludedLanes = lanes;
   workInProgressRootExitStatus = RootIncomplete;
@@ -1503,6 +1507,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 
   // If the root or lanes have changed, throw out the existing stack
   // and prepare a fresh one. Otherwise we'll continue where we left off.
+
   if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
     prepareFreshStack(root, lanes);
     startWorkOnPendingInteractions(root, lanes);
@@ -2039,7 +2044,7 @@ function commitRootImpl(root, renderPriorityLevel) {
         }
       } else {
         try {
-          // 会调用getSnapshotBeforeUpdate函数
+          // 会调用getSnxapshotBeforeUpdate函数
           commitBeforeMutationEffects();
         } catch (error) {
           invariant(nextEffect !== null, 'Should be working on an effect.');

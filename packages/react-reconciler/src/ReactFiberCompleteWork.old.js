@@ -759,6 +759,7 @@ function completeWork(
           // Certain renderers require commit-time effects for initial mount.
           // (eg DOM renderer supports auto-focus for certain elements).
           // Make sure such renderers get scheduled for later work.
+          // 设置属性
           if (
             finalizeInitialChildren(
               instance,
