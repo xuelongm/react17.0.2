@@ -478,6 +478,7 @@ function commitLifeCycles(
           recordLayoutEffectDuration(finishedWork);
         }
       } else {
+        // 执行LayouHook
         commitHookEffectListMount(HookLayout | HookHasEffect, finishedWork);
       }
       // 讲useEffect 加入到数组中
