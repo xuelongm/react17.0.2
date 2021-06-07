@@ -247,6 +247,7 @@ export function createContainer(
   return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks);
 }
 // 开始更新
+// container为fiberRoot
 export function updateContainer(
   element: ReactNodeList,
   container: OpaqueRoot,

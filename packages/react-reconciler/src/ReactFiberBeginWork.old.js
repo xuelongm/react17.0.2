@@ -1137,6 +1137,7 @@ function updateHostComponent(
   const prevProps = current !== null ? current.memoizedProps : null;
 
   let nextChildren = nextProps.children;
+  // 判断子节点是否为唯一的文本节点，如果是，则进行优化，直接complete
   const isDirectTextChild = shouldSetTextContent(type, nextProps);
 
   if (isDirectTextChild) {
@@ -3108,7 +3109,7 @@ function beginWork(
   if (current !== null) {
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
-
+    // 判断当前fiber节点是否有变化，
     if (
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
@@ -3295,6 +3296,7 @@ function beginWork(
       }
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     } else {
+      // 只存在传统模式的一种特殊情况
       if ((current.flags & ForceUpdateForLegacySuspense) !== NoFlags) {
         // This is a special case that only exists for legacy mode.
         // See https://github.com/facebook/react/pull/19216.
