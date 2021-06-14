@@ -446,6 +446,7 @@ export function processUpdateQueue<State>(
     // queue is a singly-linked list with no cycles, we can append to both
     // lists and take advantage of structural sharing.
     // TODO: Pass `current` as argument
+    // 讲当前update链接到current中，防止任务被打断后丢失
     const current = workInProgress.alternate;
     if (current !== null) {
       // This is always non-null on a ClassComponent or HostRoot
@@ -478,6 +479,7 @@ export function processUpdateQueue<State>(
     do {
       const updateLane = update.lane;
       const updateEventTime = update.eventTime;
+      // 判断优先级是否在本次更新的优先级之内，如果不在，则跳过本次updata
       if (!isSubsetOfLanes(renderLanes, updateLane)) {
         // Priority is insufficient. Skip this update. If this is the first
         // skipped update, the previous update/state is the new base
@@ -502,7 +504,7 @@ export function processUpdateQueue<State>(
         newLanes = mergeLanes(newLanes, updateLane);
       } else {
         // This update does have sufficient priority.
-
+        // 如果有跳过的更新，则从当前被跳过的更新出，都要保存
         if (newLastBaseUpdate !== null) {
           const clone: Update<State> = {
             eventTime: updateEventTime,
@@ -521,6 +523,7 @@ export function processUpdateQueue<State>(
         }
 
         // Process this update.
+        // 更新state
         newState = getStateFromUpdate(
           workInProgress,
           queue,
@@ -559,7 +562,7 @@ export function processUpdateQueue<State>(
         }
       }
     } while (true);
-
+    // 表示没有跳过的低优先级更新
     if (newLastBaseUpdate === null) {
       newBaseState = newState;
     }

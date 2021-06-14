@@ -875,6 +875,7 @@ function updateClassComponent(
   // Push context providers early to prevent context stack mismatches.
   // During mounting we don't know the child context yet as the instance doesn't exist.
   // We will invalidate the child context in finishClassComponent() right after rendering.
+  // 处理context
   let hasContext;
   if (isLegacyContextProvider(Component)) {
     hasContext = true;

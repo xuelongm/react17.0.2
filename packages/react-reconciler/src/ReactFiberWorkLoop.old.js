@@ -680,6 +680,7 @@ function markUpdateLaneFromFiberToRoot(
 // root has work on. This function is called on every update, and right before
 // exiting a task.
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
+  // 当前是否存在被调度的任务
   const existingCallbackNode = root.callbackNode;
 
   // Check if any lanes are being starved by other work. If so, mark them as
@@ -708,6 +709,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   // 检查是否有现有任务，可能会重用
   if (existingCallbackNode !== null) {
     const existingCallbackPriority = root.callbackPriority;
+    // 被调度的任务和当前任务相等，则将任务合并
     if (existingCallbackPriority === newCallbackPriority) {
       // The priority hasn't changed. We can reuse the existing task. Exit.
       return;
@@ -1664,15 +1666,18 @@ function performUnitOfWork(unitOfWork: Fiber): void {
 
   let next;
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
+    // 开始渲染时间
     startProfilerTimer(unitOfWork);
     // 构建workInProgress
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
+    // 本次渲染所用时间
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
   }
 
   resetCurrentDebugFiberInDEV();
+  // 保存本次的props，下次更新对比用
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
