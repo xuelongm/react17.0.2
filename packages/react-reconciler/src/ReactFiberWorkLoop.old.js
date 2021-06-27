@@ -2340,6 +2340,7 @@ function commitMutationEffects(
     const flags = nextEffect.flags;
 
     if (flags & ContentReset) {
+      // 重置text
       commitResetTextContent(nextEffect);
     }
 
@@ -2352,6 +2353,7 @@ function commitMutationEffects(
       if (enableScopeAPI) {
         // TODO: This is a temporary solution that allowed us to transition away
         // from React Flare on www.
+        // 下面是临时方案，可以忽略
         if (nextEffect.tag === ScopeComponent) {
           commitAttachRef(nextEffect);
         }

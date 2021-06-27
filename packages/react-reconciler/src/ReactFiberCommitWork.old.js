@@ -1342,6 +1342,7 @@ function unmountHostComponents(
           (fundamentalNode: Instance),
         );
       } else {
+        // 删除真实DOM
         removeChild(
           ((currentParent: any): Instance),
           (fundamentalNode: Instance),
