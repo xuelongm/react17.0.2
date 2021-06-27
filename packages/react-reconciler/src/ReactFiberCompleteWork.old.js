@@ -696,6 +696,7 @@ function completeWork(
       updateHostContainer(workInProgress);
       return null;
     }
+    //HostComponent 
     case HostComponent: {
       popHostContext(workInProgress);
       const rootContainerInstance = getRootHostContainer();

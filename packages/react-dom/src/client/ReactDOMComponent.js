@@ -710,6 +710,7 @@ export function diffProperties(
   let propKey;
   let styleName;
   let styleUpdates = null;
+  // 处理渲染有的属性，且当前props没有的情况，将updatePayload添加[key,null]
   for (propKey in lastProps) {
     if (
       nextProps.hasOwnProperty(propKey) ||

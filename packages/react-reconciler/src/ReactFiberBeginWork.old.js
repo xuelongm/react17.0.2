@@ -953,6 +953,7 @@ function finishClassComponent(
   renderLanes: Lanes,
 ) {
   // Refs should update even if shouldComponentUpdate returns false
+  // 标记当前fiber是否有ref
   markRef(current, workInProgress);
 
   const didCaptureError = (workInProgress.flags & DidCapture) !== NoFlags;
